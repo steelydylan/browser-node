@@ -101,56 +101,72 @@ export function runCode({
   process: Process;
 }) {
   function customRequire(filePath: string) {
-    if (filePath === "fs") {
-      return fs;
+    try {
+      if (filePath === "fs") {
+        return fs;
+      }
+      if (filePath === "console") {
+        return console;
+      }
+      if (filePath === "process") {
+        return process;
+      }
+      if (defaultModule[filePath]) {
+        return defaultModule[filePath];
+      }
+      const baseDir = isRelativePath(filePath) && this ? this : cwd;
+
+      const tmpFilePath = resolveModule(filePath, fs, baseDir);
+
+      const exports = {};
+      const module = { exports };
+
+      // nodeの起動下ファイルを特定するために利用
+      if (!customRequire.main) {
+        customRequire.main = module;
+      }
+
+      const dirName = path.dirname(tmpFilePath);
+
+      const code = fs.readFileSync(tmpFilePath, "utf8");
+
+      const removeUserBinNode = code.replace(
+        /^#!.*\n/,
+        ""
+      ); /* shebangを削除する */
+
+      const addRequireCode = `const __dirname = "${dirName}";
+        const process = require("process");
+        const console = require("console");
+        ${removeUserBinNode}`;
+
+      // import文をサポート
+      const finalCode = ts.transpileModule(addRequireCode, {
+        compilerOptions: {
+          module: ts.ModuleKind.CommonJS,
+        },
+      }).outputText;
+
+      const script = new Function("require", "module", "exports", finalCode);
+
+      script(customRequire.bind(dirName), module, exports);
+
+      return module.exports;
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
-    if (filePath === "console") {
-      return console;
-    }
-    if (filePath === "process") {
-      return process;
-    }
-    if (defaultModule[filePath]) {
-      return defaultModule[filePath];
-    }
-
-    const baseDir = isRelativePath(filePath) && this ? this : cwd;
-
-    const tmpFilePath = resolveModule(filePath, fs, baseDir);
-
-    const exports = {};
-    const module = { exports };
-
-    // nodeの起動下ファイルを特定するために利用
-    if (!customRequire.main) {
-      customRequire.main = module;
-    }
-
-    const dirName = path.dirname(tmpFilePath);
-
-    const code = fs.readFileSync(tmpFilePath, "utf8");
-
-    const addRequireCode = `const __dirname = "${dirName}";
-    const process = require("process");
-    const console = require("console");
-    ${code}`;
-
-    // import文をサポート
-    const finalCode = ts.transpileModule(addRequireCode, {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-      },
-    }).outputText;
-
-    const script = new Function("require", "module", "exports", finalCode);
-
-    script(customRequire.bind(dirName), module, exports);
-
-    return module.exports;
   }
 
   // `require.main`プロパティの初期化
   customRequire.main = null;
+  customRequire.resolve = (filePath: string) => {
+    return resolveModule(filePath, fs, cwd);
+  };
 
-  customRequire(filePath);
+  if (filePath.startsWith("/")) {
+    customRequire("./" + path.relative(cwd, filePath));
+  } else {
+    customRequire(filePath);
+  }
 }

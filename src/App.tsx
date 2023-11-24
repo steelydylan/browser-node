@@ -21,6 +21,16 @@ const files = {
           hello: () => console.log(chalk.blue('Hello World!'))
       };
   `,
+  "webpack.config.js": `
+      const path = require('path');
+      module.exports = {
+          entry: './main.js',
+          output: {
+              filename: 'bundle.js',
+              path: path.resolve(__dirname, 'dist'),
+          },
+      };
+  `,
   "./package.json": `
       {
           "name": "node-browser",
@@ -29,6 +39,7 @@ const files = {
           "main": "main.js",
           "scripts": {
               "test": "echo \\"Error: no test specified\\" && exit 1",
+              "build": "webpack",
               "start": "node ./main.js"
           },
           "keywords": [],
@@ -36,7 +47,9 @@ const files = {
           "license": "ISC",
           "dependencies": {
               "chalk": "^4.1.2",
-              "cows": "^2.1.1"
+              "cows": "^2.1.1",
+              "webpack": "^5.89.0",
+              "webpack-cli": "^5.1.4"
           }
       }
   `,

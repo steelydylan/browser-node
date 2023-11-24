@@ -37,6 +37,32 @@ export class NodeBrowser {
   }
 
   private async runNpm(commands: string[]) {
+    if (commands[0] === "run") {
+      const [scriptName, ...rest] = commands.slice(1);
+      const packageJson = JSON.parse(
+        this.fs.readFileSync(path.join(this.cwd, "package.json"), "utf-8")
+      );
+      const script = packageJson.scripts[scriptName];
+      const scriptCommands = script.split(" ");
+      await this.command([...scriptCommands, ...rest]);
+      return;
+    } else if (commands[0] === "start") {
+      const packageJson = JSON.parse(
+        this.fs.readFileSync(path.join(this.cwd, "package.json"), "utf-8")
+      );
+      const script = packageJson.scripts.start;
+      const scriptCommands = script.split(" ");
+      await this.command(scriptCommands);
+      return;
+    } else if (commands[0] === "test") {
+      const packageJson = JSON.parse(
+        this.fs.readFileSync(path.join(this.cwd, "package.json"), "utf-8")
+      );
+      const script = packageJson.scripts.test;
+      const scriptCommands = script.split(" ");
+      await this.command(scriptCommands);
+      return;
+    }
     await runNpmCli(commands, {
       fs: this.fs,
       cwd: this.cwd,
@@ -92,23 +118,25 @@ export class NodeBrowser {
 
   private async runExecutable(commands: string[]) {
     const [executable, ...args] = commands;
-    const executablePath = path.join(
-      this.cwd,
-      "node_modules",
-      ".bin",
-      executable
+    const executablePath = path.join(this.cwd, "node_modules", executable);
+    const packageJson = JSON.parse(
+      this.fs.readFileSync(path.join(executablePath, "package.json"), "utf-8")
     );
+    const bin = packageJson.bin;
+    const binName = Object.keys(bin)[0];
+    const binPath = path.join(executablePath, bin[binName]);
+
     const console = createConsole(this.stdout, this.stderr);
     const process = new Process({
       stdin: this.stdin,
       stdout: this.stdout,
       stderr: this.stderr,
       env: {},
-      argv: [executablePath, ...args],
+      argv: [binPath, ...args],
       cwd: this.cwd,
     });
     runCode({
-      filePath: executablePath,
+      filePath: binPath,
       fs: this.fs,
       cwd: this.cwd,
       console,
