@@ -122,6 +122,12 @@ export class NodeBrowser {
       this.lsCommand(restCommands);
     } else if (firstCommand === "cat") {
       this.catCommand(restCommands);
+    } else if (firstCommand === "rm") {
+      this.rmCommand(restCommands);
+    } else if (firstCommand === "touch") {
+      this.touchCommand(restCommands);
+    } else if (firstCommand === "mkdir") {
+      this.mkdirCommand(restCommands);
     } else {
       this.runExecutable(commands);
     }
@@ -177,6 +183,25 @@ export class NodeBrowser {
     const file = path.join(this.cwd, filePath);
     const content = this.fs.readFileSync(file, "utf-8");
     this.stdout.write(content + "\n");
+  }
+
+  private async rmCommand(commands: string[]) {
+    const [filePath] = commands;
+    const file = path.join(this.cwd, filePath);
+    this.fs.unlinkSync(file);
+  }
+
+  private async touchCommand(commands: string[]) {
+    const [filePath] = commands;
+    const file = path.join(this.cwd, filePath);
+    console.log(file);
+    this.fs.writeFileSync(file, "");
+  }
+
+  private async mkdirCommand(commands: string[]) {
+    const [dirPath] = commands;
+    const dir = path.join(this.cwd, dirPath);
+    this.fs.mkdirSync(dir);
   }
 
   onData(cb: (data: string) => void) {
