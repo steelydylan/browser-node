@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Terminal } from "xterm";
 import "xterm/css/xterm.css";
 import "./App.css";
+import "./index.css";
 import { NodeBrowser } from "./lib/node-browser";
 
 const node = new NodeBrowser();
@@ -87,9 +88,18 @@ function App() {
   }, []);
 
   return (
-    <>
-      <div className="terminal" ref={ref}></div>
-    </>
+    <div className="py-6">
+      <aside className="bg-black text-white p-6 rounded-lg w-full max-w-lg font-mono m-auto">
+        <div className="flex justify-between items-center">
+          <div className="flex space-x-2 text-red-500">
+            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500" />
+            <div className="w-3 h-3 rounded-full bg-green-500" />
+          </div>
+        </div>
+        <div className="terminal" ref={ref}></div>
+      </aside>
+    </div>
   );
 }
 
