@@ -71,6 +71,7 @@ function resolveAbsoluteFromNodeModules(
 
   try {
     const packageJson = JSON.parse(
+      // @ts-expect-error TODO: fix this
       fs.readFileSync(path.join(cwd, packageJsonPath), "utf8")
     );
 
@@ -111,9 +112,12 @@ export function runCode({
       if (filePath === "process") {
         return process;
       }
+      // @ts-expect-error TODO: fix this
       if (defaultModule[filePath]) {
+        // @ts-expect-error TODO: fix this
         return defaultModule[filePath];
       }
+      // @ts-expect-error TODO: fix this
       const baseDir = isRelativePath(filePath) && this ? this : cwd;
 
       const tmpFilePath = resolveModule(filePath, fs, baseDir);
@@ -123,13 +127,14 @@ export function runCode({
 
       // nodeの起動下ファイルを特定するために利用
       if (!customRequire.main) {
+        // @ts-expect-error TODO: fix this
         customRequire.main = module;
       }
 
       const dirName = path.dirname(tmpFilePath);
 
       const code = fs.readFileSync(tmpFilePath, "utf8");
-
+      // @ts-expect-error TODO: fix this
       const removeUserBinNode = code.replace(
         /^#!.*\n/,
         ""

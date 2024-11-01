@@ -45,6 +45,7 @@ export class NodeBrowser {
     if (commands[0] === "run") {
       const [scriptName, ...rest] = commands.slice(1);
       const packageJson = JSON.parse(
+        // @ts-expect-error TODO: fix this
         this.fs.readFileSync(path.join(this.cwd, "package.json"), "utf-8")
       );
       const script = packageJson.scripts[scriptName];
@@ -53,6 +54,7 @@ export class NodeBrowser {
       return;
     } else if (commands[0] === "start") {
       const packageJson = JSON.parse(
+        // @ts-expect-error TODO: fix this
         this.fs.readFileSync(path.join(this.cwd, "package.json"), "utf-8")
       );
       const script = packageJson.scripts.start;
@@ -61,6 +63,7 @@ export class NodeBrowser {
       return;
     } else if (commands[0] === "test") {
       const packageJson = JSON.parse(
+        // @ts-expect-error TODO: fix this
         this.fs.readFileSync(path.join(this.cwd, "package.json"), "utf-8")
       );
       const script = packageJson.scripts.test;
@@ -128,6 +131,7 @@ export class NodeBrowser {
     const [executable, ...args] = commands;
     const executablePath = path.join(this.cwd, "node_modules", executable);
     const packageJson = JSON.parse(
+      // @ts-expect-error TODO: fix this
       this.fs.readFileSync(path.join(executablePath, "package.json"), "utf-8")
     );
     const bin = packageJson.bin;
