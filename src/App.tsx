@@ -61,6 +61,7 @@ node.mount(files);
 
 const terminal = new Terminal({
   convertEol: true,
+  cursorBlink: true,
 });
 
 node.onData((data) => {
