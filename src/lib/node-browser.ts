@@ -10,6 +10,12 @@ import { Process } from "./process";
 
 const decoder = new TextDecoder();
 
+function ensurePath(str: string) {
+  return str.startsWith("./") || str.startsWith("../") || str.startsWith("/")
+    ? str
+    : `./${str}`;
+}
+
 export class NodeBrowser {
   fs!: IFs;
   vol!: Volume;
@@ -32,7 +38,6 @@ export class NodeBrowser {
     const { fs, vol } = memfs(files, this.cwd);
     this.fs = fs;
     this.vol = vol;
-
     // this.command(["npm", "install", "npm"]);
   }
 
@@ -63,6 +68,9 @@ export class NodeBrowser {
       await this.command(scriptCommands);
       return;
     }
+    if (commands[0] === "install") {
+      this.stdout.write("installing...\n");
+    }
     await runNpmCli(commands, {
       fs: this.fs,
       cwd: this.cwd,
@@ -92,7 +100,7 @@ export class NodeBrowser {
       const filePath = restCommands[0];
       const console = createConsole(this.stdout, this.stderr);
       runCode({
-        filePath,
+        filePath: ensurePath(filePath),
         fs: this.fs,
         cwd: this.cwd,
         console,
@@ -101,7 +109,7 @@ export class NodeBrowser {
           stdout: this.stdout,
           stderr: this.stderr,
           env: {},
-          argv: [filePath],
+          argv: [ensurePath(filePath)],
           cwd: this.cwd,
         }),
       });
