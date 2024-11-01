@@ -69,9 +69,16 @@ node.onData((data) => {
   terminal.write(data);
 });
 
+node.onCommandEnd(() => {
+  terminal.write('\r\n$ ');
+});
+
 terminal.onData((data) => {
   node.write(data);
 });
+
+terminal.write('\r\n$ ')
+
 
 function App() {
   const ref = useRef<HTMLDivElement>(null);

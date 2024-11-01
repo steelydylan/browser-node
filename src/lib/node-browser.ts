@@ -25,6 +25,7 @@ export class NodeBrowser {
   stderr!: StdOut;
   emitter!: Emitter<{ data: string }>;
   commandStr = "";
+  private onCommandEndCallback!: () => void;
 
   constructor() {
     const { stdin, stdout, stderr, emitter } = createStd();
@@ -32,6 +33,7 @@ export class NodeBrowser {
     this.stdout = stdout;
     this.stderr = stderr;
     this.emitter = emitter;
+    this.onCommandEndCallback = () => {};
   }
 
   mount(files: Record<string, string>) {
@@ -117,20 +119,21 @@ export class NodeBrowser {
         }),
       });
     } else if (firstCommand === "cd") {
-      this.cdCommand(restCommands);
+      await this.cdCommand(restCommands);
     } else if (firstCommand === "ls") {
-      this.lsCommand(restCommands);
+      await this.lsCommand(restCommands);
     } else if (firstCommand === "cat") {
-      this.catCommand(restCommands);
+      await this.catCommand(restCommands);
     } else if (firstCommand === "rm") {
-      this.rmCommand(restCommands);
+      await this.rmCommand(restCommands);
     } else if (firstCommand === "touch") {
-      this.touchCommand(restCommands);
+      await this.touchCommand(restCommands);
     } else if (firstCommand === "mkdir") {
-      this.mkdirCommand(restCommands);
+      await this.mkdirCommand(restCommands);
     } else {
-      this.runExecutable(commands);
+      await this.runExecutable(commands);
     }
+    this.onCommandEndCallback();
   }
 
   private async runExecutable(commands: string[]) {
@@ -210,6 +213,10 @@ export class NodeBrowser {
         cb(decoder.decode(chunk));
       });
     });
+  }
+
+  onCommandEnd(cb: () => void) {
+    this.onCommandEndCallback = cb;
   }
 
   write(data: string) {
